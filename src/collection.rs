@@ -41,12 +41,12 @@ use crate::{config, proto::milvus::DeleteRequest};
 use prost::bytes::BytesMut;
 use prost::Message;
 use serde_json;
-use tonic::codegen::InterceptedService;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::time::Duration;
 use thiserror::Error as ThisError;
 use tokio::sync::Mutex;
+use tonic::codegen::InterceptedService;
 use tonic::transport::Channel;
 
 const STRONG_TIMESTAMP: u64 = 0;
@@ -71,7 +71,10 @@ pub struct Collection {
 }
 
 impl Collection {
-    pub fn new(client: MilvusServiceClient<InterceptedService<Channel, AuthInterceptor>>, info: DescribeCollectionResponse) -> Self {
+    pub fn new(
+        client: MilvusServiceClient<InterceptedService<Channel, AuthInterceptor>>,
+        info: DescribeCollectionResponse,
+    ) -> Self {
         let schema = info.schema.clone().unwrap();
         Self {
             client,
@@ -80,6 +83,10 @@ impl Collection {
             partitions: Mutex::new(Default::default()),
             session_timestamps: ConcurrentHashMap::new(HashMap::new()),
         }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.schema.name
     }
 
     pub fn schema(&self) -> &CollectionSchema {
