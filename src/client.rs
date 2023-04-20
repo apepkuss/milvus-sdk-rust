@@ -27,17 +27,17 @@ use crate::proto::milvus::{
 };
 use crate::schema::CollectionSchema;
 use crate::utils::{new_msg, status_to_result};
-use base64::Engine;
 use base64::engine::general_purpose;
+use base64::Engine;
 use prost::bytes::BytesMut;
 use prost::Message;
-use tonic::{Request};
-use tonic::service::Interceptor;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::time::Duration;
-use tonic::codegen::{StdError, InterceptedService};
+use tonic::codegen::{InterceptedService, StdError};
+use tonic::service::Interceptor;
 use tonic::transport::Channel;
+use tonic::Request;
 
 #[derive(Clone)]
 pub struct AuthInterceptor {
@@ -45,7 +45,10 @@ pub struct AuthInterceptor {
 }
 
 impl Interceptor for AuthInterceptor {
-    fn call(&mut self, mut req: Request<()>) -> std::result::Result<tonic::Request<()>, tonic::Status> {
+    fn call(
+        &mut self,
+        mut req: Request<()>,
+    ) -> std::result::Result<tonic::Request<()>, tonic::Status> {
         if let Some(ref token) = self.token {
             let header_value = format!("{}", token);
             req.metadata_mut()
@@ -268,5 +271,14 @@ impl Client {
             .into_iter()
             .map(|(k, v)| (k, v.data))
             .collect())
+    }
+
+    pub async fn collections(&self) -> Result<Vec<Collection>> {
+        let names = self.list_collections().await?;
+        let mut res = Vec::with_capacity(names.len());
+        for name in names {
+            res.push(self.get_collection(&name).await?);
+        }
+        Ok(res)
     }
 }
