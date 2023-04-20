@@ -506,12 +506,12 @@ impl CollectionSchemaBuilder {
         }
     }
 
-    pub fn add_field(&mut self, schema: FieldSchema) -> &mut Self {
+    pub fn add_field(mut self, schema: FieldSchema) -> Self {
         self.inner.push(schema);
         self
     }
 
-    pub fn set_primary_key<S>(&mut self, name: S) -> Result<&mut Self>
+    pub fn set_primary_key<S>(mut self, name: S) -> Result<Self>
     where
         S: AsRef<str>,
     {
@@ -541,7 +541,7 @@ impl CollectionSchemaBuilder {
         Err(error::Error::from(Error::NoSuchKey(n.to_string())))
     }
 
-    pub fn enable_auto_id(&mut self) -> Result<&mut Self> {
+    pub fn enable_auto_id(mut self) -> Result<Self> {
         for f in self.inner.iter_mut() {
             if f.is_primary {
                 if f.dtype == DataType::Int64 {
@@ -558,7 +558,7 @@ impl CollectionSchemaBuilder {
         Err(error::Error::from(Error::NoPrimaryKey))
     }
 
-    pub fn build(&mut self) -> Result<CollectionSchema> {
+    pub fn build(self) -> Result<CollectionSchema> {
         let mut has_primary = false;
 
         for f in self.inner.iter() {
@@ -572,12 +572,12 @@ impl CollectionSchemaBuilder {
             return Err(error::Error::from(Error::NoPrimaryKey));
         }
 
-        let this = std::mem::replace(self, CollectionSchemaBuilder::new("".into(), ""));
+        // let this = std::mem::replace(self, CollectionSchemaBuilder::new("".into(), ""));
 
         Ok(CollectionSchema {
-            fields: this.inner.into(),
-            name: this.name,
-            description: this.description,
+            fields: self.inner.into(),
+            name: self.name,
+            description: self.description,
         })
     }
 }
