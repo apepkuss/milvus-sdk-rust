@@ -71,8 +71,7 @@ async fn create_has_drop_collection() -> Result<()> {
     let client = Client::new(URL).await?;
     // let client = ClientBuilder::new(URL).username("username").password("password").build().await?;
 
-    let mut schema = CollectionSchemaBuilder::new(NAME, "hello world");
-    let schema = schema
+    let schema = CollectionSchemaBuilder::new(NAME, "hello world")
         .add_field(FieldSchema::new_int64("i64_field", ""))
         .add_field(FieldSchema::new_bool("bool_field", ""))
         .set_primary_key("i64_field")?
